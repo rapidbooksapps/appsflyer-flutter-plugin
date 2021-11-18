@@ -41,7 +41,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="scheme" />
+                <data android:host="flutter.demo" android:scheme="https" />
             </intent-filter>
         </activity>
     </application>

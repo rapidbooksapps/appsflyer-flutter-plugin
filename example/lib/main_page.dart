@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:appsflyer_sdk/appsflyer_sdk.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-
 import 'home_container.dart';
 
 class MainPage extends StatefulWidget {
@@ -14,51 +12,13 @@ class MainPage extends StatefulWidget {
 
 class MainPageState extends State<MainPage> {
   AppsflyerSdk _appsflyerSdk;
-  Map _deepLinkData;
-  Map _gcd;
-  // called on every foreground
+
   @override
   void initState() {
     super.initState();
     final AppsFlyerOptions options = AppsFlyerOptions(
-    afDevKey: DotEnv().env["DEV_KEY"],
-    appId: DotEnv().env["APP_ID"],
-    showDebug: true,
-    ); 
+        afDevKey: "afDevKey", appId: "123456789", showDebug: true);
     _appsflyerSdk = AppsflyerSdk(options);
-    _appsflyerSdk.onAppOpenAttribution((res) {
-      print("onAppOpenAttribution res: " + res.toString());
-      setState(() {
-        _deepLinkData = res;
-      });
-    });
-    _appsflyerSdk.onInstallConversionData((res) {
-      print("onInstallConversionData res: " + res.toString());
-      setState(() {
-        _gcd = res;
-      });
-    });
-    _appsflyerSdk.onDeepLinking((DeepLinkResult dp){
-      switch (dp.status) {
-        case Status.FOUND:
-          print(dp.deepLink?.toString());
-          print("deep link value: ${dp.deepLink?.deepLinkValue}");
-          break;
-        case Status.NOT_FOUND:
-          print("deep link not found");
-          break;
-        case Status.ERROR:
-          print("deep link error: ${dp.error}");
-          break;
-        case Status.PARSE_ERROR:
-          print("deep link status parsing error");
-          break;
-      }
-      print("onDeepLinking res: " + dp.toString());
-      setState(() {
-        _deepLinkData = dp.toJson();
-      });
-    });
   }
 
   @override
@@ -72,24 +32,23 @@ class MainPageState extends State<MainPage> {
                   future: _appsflyerSdk.getSDKVersion(),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
                     return Text(snapshot.hasData ? snapshot.data : "");
-                  }), 
+                  })
             ],
           ),
         ),
         body: FutureBuilder<dynamic>(
             future: _appsflyerSdk.initSdk(
                 registerConversionDataCallback: true,
-                registerOnAppOpenAttributionCallback: true,
-                registerOnDeepLinkingCallback: true),
+                registerOnAppOpenAttributionCallback: true),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
               } else {
                 if (snapshot.hasData) {
                   return HomeContainer(
-                    onData: _gcd, 
-                    deepLinkData: _deepLinkData,
-                    logEvent: logEvent,
+                    onData: _appsflyerSdk.conversionDataStream,
+                    onAttribution: _appsflyerSdk.appOpenAttributionStream,
+                    trackEvent: trackEvent,
                   );
                 } else {
                   return Center(child: Text("Error initializing sdk"));
@@ -98,8 +57,7 @@ class MainPageState extends State<MainPage> {
             }));
   }
 
-  Future<bool> logEvent(String eventName, Map eventValues) {
-    return _appsflyerSdk.logEvent(eventName, eventValues);
+  Future<bool> trackEvent(String eventName, Map eventValues) {
+    return _appsflyerSdk.trackEvent(eventName, eventValues);
   }
-
 }

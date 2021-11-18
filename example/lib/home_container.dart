@@ -1,31 +1,36 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import './app_constants.dart';
 import 'text_border.dart';
 import 'utils.dart';
 
-// ignore: must_be_immutable
 class HomeContainer extends StatefulWidget {
-  final Map onData;
-  final Future<bool> Function(String, Map) logEvent;
-  Object deepLinkData;
+  Stream<Map> onData;
+  Stream<Map> onAttribution;
+  Future<bool> Function(String,Map) trackEvent;
 
-  HomeContainer({this.onData, this.deepLinkData, this.logEvent});
+
+  HomeContainer(
+      {this.onData,
+      this.onAttribution,
+      this.trackEvent
+      });
 
   @override
   _HomeContainerState createState() => _HomeContainerState();
 }
 
 class _HomeContainerState extends State<HomeContainer> {
-  final String eventName = "purchase";
+  final String eventName = "my event";
 
   final Map eventValues = {
     "af_content_id": "id123",
     "af_currency": "USD",
-    "af_revenue": "20"
+    "af_revenue": "2"
   };
 
-  String _logEventResponse = "No event have been sent";
+  String _trackEventResponse = "No event have been sent";
 
   @override
   Widget build(BuildContext context) {
@@ -42,23 +47,25 @@ class _HomeContainerState extends State<HomeContainer> {
               Padding(
                 padding: EdgeInsets.only(top: AppConstants.TOP_PADDING),
               ),
-              TextBorder(
-                controller: TextEditingController(
-                    text: widget.onData != null
-                        ? Utils.formatJson(widget.onData)
-                        : "No conversion data"),
+              StreamBuilder<dynamic>(stream: widget.onData,  builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot)
+               {
+                    return  
+                    TextBorder(
+                controller: TextEditingController(text: snapshot.hasData? Utils.formatJson(snapshot.data): "No conversion data"),
                 labelText: "Conversion Data:",
-              ),
+              );
+               }),
               Padding(
                 padding: EdgeInsets.only(top: 12.0),
               ),
-              TextBorder(
-                controller: TextEditingController(
-                     text: widget.deepLinkData != null ? 
-                            Utils.formatJson(widget.deepLinkData) : 
-                            "No Attribution data"),
+              StreamBuilder<dynamic>(stream: widget.onAttribution,  builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot)
+               {
+                    return  
+                    TextBorder(
+                controller: TextEditingController(text: snapshot.hasData? Utils.formatJson(snapshot.data): "No attribution data"),
                 labelText: "Attribution Data:",
-              ),
+              );
+               }),
               Padding(
                 padding: EdgeInsets.only(top: 12.0),
               ),
@@ -71,38 +78,32 @@ class _HomeContainerState extends State<HomeContainer> {
                 ),
                 child: Column(children: <Widget>[
                   Center(
-                    child: Text("Log event"),
+                    child: Text("Track event"),
                   ),
                   Padding(
                     padding: EdgeInsets.only(top: 12.0),
                   ),
                   TextBorder(
-                    controller: TextEditingController(
-                        text:
-                            "event name: $eventName\nevent values: $eventValues"),
+                    controller: TextEditingController(text: "event name: $eventName\nevent values: $eventValues"),
                     labelText: "Event Request",
                   ),
                   Padding(
                     padding: EdgeInsets.only(top: 12.0),
                   ),
-                  TextBorder(
-                      labelText: "Server response",
-                      controller:
-                          TextEditingController(text: _logEventResponse)),
-                  ElevatedButton(
+                  TextBorder( labelText: "Server response", controller: TextEditingController(text: _trackEventResponse)),
+                  RaisedButton(
                     onPressed: () {
-                      print("Pressed");
-                      widget.logEvent(eventName, eventValues).then((onValue) {
-                        setState(() {
-                          _logEventResponse = onValue.toString();
-                        });
-                      }).catchError((onError) {
-                        setState(() {
-                          _logEventResponse = onError.toString();
-                        });
+                     widget.trackEvent(eventName, eventValues).then((onValue){
+                       setState(() {
+                        _trackEventResponse = onValue.toString();
                       });
+                     }).catchError((onError){
+                       setState(() {
+                        _trackEventResponse = onError.toString();
+                      });
+                     });
                     },
-                    child: Text("Send purchase event"),
+                    child: Text("Send event"),
                   ),
                 ]),
               )

@@ -10,14 +10,12 @@
 
 // I will change it to seperate file with #defines
 #import "AppsflyerSdkPlugin.h"
-#import "AppsFlyerAttribution.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AppsFlyerStreamHandler: NSObject<AppsFlyerLibDelegate, AppsFlyerDeepLinkDelegate>
+@interface AppsFlyerStreamHandler: NSObject<FlutterStreamHandler, AppsFlyerTrackerDelegate>
 
-- (void)sendResponseToFlutter:(NSString *)responseID status:(NSString *)status data:(NSDictionary *)data;
-- (NSString*) getStatusAsString:(AFSDKDeepLinkResultStatus)value;
+- (void) sendObject:(NSDictionary*) obj;
 
 @end
 
