@@ -88,7 +88,7 @@ public class AppsflyerSdkPlugin implements MethodCallHandler, FlutterPlugin, Act
         this.mContext = applicationContext;
         Intent intent = new Intent();
         intent.setClassName("com.appsflyer.appsflyersdk", "AppsflyerSdkPlugin");
-        if(intent.resolveActivity(getPackageManager()) != null) {
+        if(intent.resolveActivity(activity.getPackageManager()) != null) {
             // 说明系统中存在这个activity
             this.mApplication = activity.getApplication();
             this.mIntent = activity.getIntent();
