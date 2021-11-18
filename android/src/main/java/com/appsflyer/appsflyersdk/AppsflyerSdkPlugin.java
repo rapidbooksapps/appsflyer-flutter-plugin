@@ -86,18 +86,14 @@ public class AppsflyerSdkPlugin implements MethodCallHandler, FlutterPlugin, Act
 
     private void onAttachedToEngine(Activity activity, Context applicationContext, BinaryMessenger messenger) {
         this.mContext = applicationContext;
-        Intent intent = new Intent();
-        intent.setClassName("com.appsflyer.appsflyersdk", "AppsflyerSdkPlugin");
         if (activity == null || activity.isDestroyed() || activity.isFinishing()) {
-
-
+            this.mApplication = (Application) applicationContext.getApplicationContext();
+            onAttachedToEngine(applicationContext,messenger);
         }else{
-            if(intent.resolveActivity(activity.getPackageManager()) != null) {
-                // 说明系统中存在这个activity
-                this.mApplication = activity.getApplication();
-                this.mIntent = activity.getIntent();
-                onAttachedToEngine(applicationContext,messenger);
-            }
+            // 说明系统中存在这个activity
+            this.mApplication = activity.getApplication();
+            this.mIntent = activity.getIntent();
+            onAttachedToEngine(applicationContext,messenger);
         }
 
     }
